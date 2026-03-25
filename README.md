@@ -1,1 +1,1 @@
-# mlops-infra
+# Infra for Kubeflow MLFlow project
