@@ -4,24 +4,24 @@ kind: Kustomization
 namespace: kubeflow
 
 resources:
-  - github.com/kubeflow/manifests/common/cert-manager/cert-manager/base?ref=v1.10.1
-  - github.com/kubeflow/manifests/common/cert-manager/kubeflow-issuer/base?ref=v1.10.1
+  - github.com/kubeflow/manifests/common/cert-manager/cert-manager/base?ref=v1.10.2
+  - github.com/kubeflow/manifests/common/cert-manager/kubeflow-issuer/base?ref=v1.10.2
 
-  - github.com/kubeflow/manifests/common/istio-1-20/istio-crds/base?ref=v1.10.1
-  - github.com/kubeflow/manifests/common/istio-1-20/istio-namespace/base?ref=v1.10.1
-  - github.com/kubeflow/manifests/common/istio-1-20/istio-install/base?ref=v1.10.1
+  - github.com/kubeflow/manifests/common/istio-1-20/istio-crds/base?ref=v1.10.2
+  - github.com/kubeflow/manifests/common/istio-1-20/istio-namespace/base?ref=v1.10.2
+  - github.com/kubeflow/manifests/common/istio-1-20/istio-install/base?ref=v1.10.2
 
-  - github.com/kubeflow/manifests/common/dex/overlays/istio?ref=v1.10.1
-  - github.com/kubeflow/manifests/common/oauth2-proxy/overlays/m2m-dex-only?ref=v1.10.1
+  - github.com/kubeflow/manifests/common/dex/overlays/istio?ref=v1.10.2
+  - github.com/kubeflow/manifests/common/oauth2-proxy/overlays/m2m-dex-only?ref=v1.10.2
 
-  - github.com/kubeflow/manifests/apps/profiles/upstream/overlays/kubeflow?ref=v1.10.1
+  - github.com/kubeflow/manifests/apps/profiles/upstream/overlays/kubeflow?ref=v1.10.2
 
-  - github.com/kubeflow/manifests/apps/centraldashboard/upstream/overlays/kserve?ref=v1.10.1
+  - github.com/kubeflow/manifests/apps/centraldashboard/upstream/overlays/kserve?ref=v1.10.2
 
-  - github.com/kubeflow/manifests/apps/jupyter/notebook-controller/upstream/overlays/kubeflow?ref=v1.10.1
-  - github.com/kubeflow/manifests/apps/jupyter/jupyter-web-app/upstream/overlays/istio?ref=v1.10.1
+  - github.com/kubeflow/manifests/apps/jupyter/notebook-controller/upstream/overlays/kubeflow?ref=v1.10.2
+  - github.com/kubeflow/manifests/apps/jupyter/jupyter-web-app/upstream/overlays/istio?ref=v1.10.2
 
-  - github.com/kubeflow/manifests/apps/pipeline/upstream/env/platform-agnostic-multi-user?ref=v1.10.1
+  - github.com/kubeflow/manifests/apps/pipeline/upstream/env/platform-agnostic-multi-user?ref=v1.10.2
 
 commonLabels:
   app.kubernetes.io/part-of: kubeflow
