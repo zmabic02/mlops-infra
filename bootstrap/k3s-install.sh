@@ -8,7 +8,7 @@ curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - \
   --disable-network-policy \
   --kube-apiserver-arg="service-account-issuer=https://kubernetes.default.svc.cluster.local"
 
-mkdir ~/.kube/config
+mkdir -p ~/.kube
 sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
 sudo chown $(whoami):$(whoami) ~/.kube/config
 chmod 600 ~/.kube/config
