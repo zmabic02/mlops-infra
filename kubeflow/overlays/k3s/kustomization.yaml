@@ -1,28 +1,25 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: kubeflow
-
 resources:
-  - github.com/kubeflow/manifests/common/cert-manager/cert-manager/base?ref=v1.10.0
-  - github.com/kubeflow/manifests/common/cert-manager/kubeflow-issuer/base?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//common/cert-manager/base?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//common/cert-manager/kubeflow-issuer/base?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//common/istio-1-24/istio-crds/base?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//common/istio-1-24/istio-namespace/base?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//common/istio-1-24/istio-install/overlays/oauth2-proxy?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//common/oauth2-proxy/overlays/m2m-dex-only?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//common/dex/overlays/oauth2-proxy?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//common/kubeflow-namespace/base?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//common/kubeflow-roles/base?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//common/istio-1-24/kubeflow-istio-resources/base?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//apps/profiles/upstream/overlays/kubeflow?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//apps/centraldashboard/overlays/oauth2-proxy?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//apps/jupyter/notebook-controller/upstream/overlays/kubeflow?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//apps/jupyter/jupyter-web-app/upstream/overlays/istio?ref=v1.10.0
+  - ../../components/pipelines
 
-  - github.com/kubeflow/manifests/common/istio-1-20/istio-crds/base?ref=v1.10.0
-  - github.com/kubeflow/manifests/common/istio-1-20/istio-namespace/base?ref=v1.10.0
-  - github.com/kubeflow/manifests/common/istio-1-20/istio-install/base?ref=v1.10.0
-
-  - github.com/kubeflow/manifests/common/dex/overlays/istio?ref=v1.10.0
-  - github.com/kubeflow/manifests/common/oauth2-proxy/overlays/m2m-dex-only?ref=v1.10.0
-
-  - github.com/kubeflow/manifests/apps/profiles/upstream/overlays/kubeflow?ref=v1.10.0
-
-  - github.com/kubeflow/manifests/apps/centraldashboard/upstream/overlays/kserve?ref=v1.10.0
-
-  - github.com/kubeflow/manifests/apps/jupyter/notebook-controller/upstream/overlays/kubeflow?ref=v1.10.0
-  - github.com/kubeflow/manifests/apps/jupyter/jupyter-web-app/upstream/overlays/istio?ref=v1.10.0
-
-  - github.com/kubeflow/manifests/apps/pipeline/upstream/env/platform-agnostic-multi-user?ref=v1.10.0
-
-commonLabels:
-  app.kubernetes.io/part-of: kubeflow
-  app.kubernetes.io/managed-by: argocd
+labels:
+  - includeSelectors: false
+    pairs:
+      app.kubernetes.io/managed-by: argocd
+      app.kubernetes.io/part-of: kubeflow

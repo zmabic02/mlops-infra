@@ -23,15 +23,22 @@ jobs:
           VERSION=$(cat kubeflow/upstream-version.txt | tr -d '[:space:]')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Update all ?ref= occurrences
+      - name: Update Kubeflow ?ref= occurrences
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           echo "Updating to version: $VERSION"
 
-          # find all kustomization.yaml files and replace ?ref=...
-          find . -type f -name "kustomization.yaml" -print0 | while IFS= read -r -d '' file; do
+          find kubeflow -type f -name "kustomization.yaml" -print0 | while IFS= read -r -d '' file; do
             sed -i -E "s/\?ref=[^\"']+/\?ref=${VERSION}/g" "$file"
           done
+
+      - name: Verify Kubeflow build
+        run: |
+          kustomize build kubeflow/overlays/k3s >/dev/null
+
+      - name: Verify ArgoCD manifests
+        run: |
+          kustomize build argocd/applications >/dev/null
 
       - name: Check for changes
         id: git-check
