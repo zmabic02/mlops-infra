@@ -16,7 +16,7 @@ help: ## Show available commands
 
 
 bootstrap: ## Initial installation (k3s + ArgoCD)
-	@echo "${YELLOW}→ Starting bootstrap...${RESET}"
+	@echo "${YELLOW}Starting bootstrap...${RESET}"
 	./bootstrap/k3s-install.sh
 	kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 	kubectl apply -n argocd \
@@ -24,6 +24,11 @@ bootstrap: ## Initial installation (k3s + ArgoCD)
 		--force-conflicts \
 		-f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 	@echo "${GREEN}ArgoCD installed"
+
+clean: ## Delete entire k3s cluster and kubeconfig
+	@echo "${YELLOW}Cleanup started"
+	./bootstrap/k3s-uninstall.sh
+	@echo "@{GREEN}Cleanup complete"
 
 
 validate: ## Validate all manifests (kustomize + kubeconform)
@@ -51,19 +56,9 @@ sync: ## Manually synchronize all applications
 port-forward: ## Port-forward for ArgoCD UI[](http://localhost:8080)
 	kubectl port-forward -n argocd svc/argocd-server 8080:80
 
-dashboard: ## Open ArgoCD UI in browser
-	@echo "Opening ArgoCD UI in http://localhost:8080"
-	xdg-open http://localhost:8080 2>/dev/null || open http://localhost:8080 2>/dev/null || echo "Open manually: http://localhost:8080"
-
-
 logs: ## Show Application Controller logs
 	kubectl logs -n argocd -l app.kubernetes.io/name=argocd-application-controller --tail=100
 
 restart-argocd: ## Restart ArgoCD controller
 	kubectl rollout restart deployment argocd-application-controller -n argocd
 	kubectl rollout restart deployment argocd-repo-server -n argocd
-
-clean: ## Delete all ArgoCD applications
-	@echo "${YELLOW}Deleting ArgoCD applications...${RESET}"
-	kubectl delete -n argocd -f argocd/applications/root-app.yaml --ignore-not-found
-	@echo "${GREEN}Applications deleted${RESET}"
