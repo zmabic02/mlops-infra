@@ -5,6 +5,15 @@ resources:
   - https://github.com/kubeflow/manifests.git//example?ref=26.03
   - ../../components/dashboard
 
+patches:
+  - path: patches/knative-destinationrule.yaml
+    target:
+      group: networking.istio.io
+      version: v1alpha3
+      kind: DestinationRule
+      name: knative
+      namespace: knative-serving
+
 labels:
   - includeSelectors: false
     pairs:
