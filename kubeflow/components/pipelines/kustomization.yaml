@@ -32,6 +32,8 @@ patches:
   - path: patches/delete.role.cache-deployer.yaml
   - path: patches/delete.rolebinding.cache-deployer.yaml
   - path: patches/delete.sa.cache-deployer.yaml
+  - path: patches/mysql-deployment.yaml
+  - path: patches/mysql-secret.yaml
   - patch: |-
       - op: add
         path: /spec/template/spec/containers/0/args/-
