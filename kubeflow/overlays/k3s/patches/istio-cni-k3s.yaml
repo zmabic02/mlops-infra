@@ -9,7 +9,7 @@ spec:
       volumes:
         - name: cni-bin-dir
           hostPath:
-            path: /var/lib/rancher/k3s/data/current/bin
+            path: /var/lib/rancher/k3s/data/cni
         - name: cni-net-dir
           hostPath:
             path: /var/lib/rancher/k3s/agent/etc/cni/net.d
