@@ -39,6 +39,8 @@ spec:
             - name: SOPS_AGE_KEY_FILE
               value: /.config/sops/age/keys.txt
           volumeMounts:
+            - mountPath: /custom-tools
+              name: custom-tools
             - mountPath: /usr/local/bin/kustomize
               $patch: delete
             - mountPath: /usr/local/bin/ksops
