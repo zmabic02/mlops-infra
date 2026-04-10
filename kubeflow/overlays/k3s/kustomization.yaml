@@ -20,6 +20,13 @@ patches:
       kind: Deployment
       name: ml-pipeline
       namespace: kubeflow
+  - path: patches/istio-cni-k3s.yaml
+    target:
+      group: apps
+      version: v1
+      kind: DaemonSet
+      name: istio-cni-node
+      namespace: kube-system
 
 labels:
   - includeSelectors: false
