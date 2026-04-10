@@ -1,18 +1,63 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+sortOptions:
+  order: legacy
+  legacySortOptions:
+    orderFirst:
+      - Namespace
+      - ResourceQuota
+      - StorageClass
+      - CustomResourceDefinition
+      - MutatingWebhookConfiguration
+      - ServiceAccount
+      - PodSecurityPolicy
+      - NetworkPolicy
+      - Role
+      - ClusterRole
+      - RoleBinding
+      - ClusterRoleBinding
+      - ConfigMap
+      - Secret
+      - Endpoints
+      - Service
+      - LimitRange
+      - PriorityClass
+      - PersistentVolume
+      - PersistentVolumeClaim
+      - Deployment
+      - StatefulSet
+      - CronJob
+      - PodDisruptionBudget
+    orderLast:
+      - ValidatingWebhookConfiguration
+
 resources:
-  - https://github.com/kubeflow/manifests.git//example?ref=26.03
+  - https://github.com/kubeflow/manifests.git//common/cert-manager/overlays/kubeflow?ref=26.03
+  - https://github.com/kubeflow/manifests.git//common/istio/istio-crds/base?ref=26.03
+  - https://github.com/kubeflow/manifests.git//common/istio/istio-namespace/base?ref=26.03
+  - https://github.com/kubeflow/manifests.git//common/istio/istio-install/overlays/oauth2-proxy?ref=26.03
+  - https://github.com/kubeflow/manifests.git//common/oauth2-proxy/overlays/m2m-dex-only?ref=26.03
+  - https://github.com/kubeflow/manifests.git//common/dex/overlays/oauth2-proxy?ref=26.03
+  - https://github.com/kubeflow/manifests.git//common/kubeflow-namespace/base?ref=26.03
+  - https://github.com/kubeflow/manifests.git//common/kubeflow-roles/base?ref=26.03
+  - https://github.com/kubeflow/manifests.git//common/istio/kubeflow-istio-resources/base?ref=26.03
+  - https://github.com/kubeflow/manifests.git//applications/pipeline/overlays?ref=26.03
+  - https://github.com/kubeflow/manifests.git//applications/centraldashboard/upstream/overlays/istio?ref=26.03
+  - https://github.com/kubeflow/manifests.git//applications/admission-webhook/upstream/overlays/cert-manager?ref=26.03
+  - https://github.com/kubeflow/manifests.git//applications/jupyter/jupyter-web-app/upstream/overlays/istio?ref=26.03
+  - https://github.com/kubeflow/manifests.git//applications/jupyter/notebook-controller/upstream/overlays/kubeflow?ref=26.03
+  - https://github.com/kubeflow/manifests.git//applications/profiles/pss?ref=26.03
+  - https://github.com/kubeflow/manifests.git//applications/pvcviewer-controller/upstream/base?ref=26.03
+  - https://github.com/kubeflow/manifests.git//applications/volumes-web-app/upstream/overlays/istio?ref=26.03
+  - https://github.com/kubeflow/manifests.git//applications/tensorboard/tensorboard-controller/upstream/overlays/kubeflow?ref=26.03
+  - https://github.com/kubeflow/manifests.git//applications/tensorboard/tensorboards-web-app/upstream/overlays/istio?ref=26.03
+  - https://github.com/kubeflow/manifests.git//applications/trainer/overlays?ref=26.03
+  - https://github.com/kubeflow/manifests.git//common/user-namespace/base?ref=26.03
+  - https://github.com/kubeflow/manifests.git//applications/spark/spark-operator/overlays/kubeflow?ref=26.03
   - ../../components/dashboard
 
 patches:
-  - path: patches/knative-destinationrule.yaml
-    target:
-      group: networking.istio.io
-      version: v1alpha3
-      kind: DestinationRule
-      name: knative
-      namespace: knative-serving
   - path: patches/ml-pipeline-probes.yaml
     target:
       group: apps
@@ -27,6 +72,41 @@ patches:
       kind: DaemonSet
       name: istio-cni-node
       namespace: kube-system
+  - path: patches/delete.networkpolicy.katib-controller.yaml
+    target:
+      group: networking.k8s.io
+      version: v1
+      kind: NetworkPolicy
+      name: katib-controller
+      namespace: kubeflow
+  - path: patches/delete.networkpolicy.katib-db-manager.yaml
+    target:
+      group: networking.k8s.io
+      version: v1
+      kind: NetworkPolicy
+      name: katib-db-manager
+      namespace: kubeflow
+  - path: patches/delete.networkpolicy.katib-ui.yaml
+    target:
+      group: networking.k8s.io
+      version: v1
+      kind: NetworkPolicy
+      name: katib-ui
+      namespace: kubeflow
+  - path: patches/delete.networkpolicy.kserve.yaml
+    target:
+      group: networking.k8s.io
+      version: v1
+      kind: NetworkPolicy
+      name: kserve
+      namespace: kubeflow
+  - path: patches/delete.networkpolicy.kserve-models-web-app.yaml
+    target:
+      group: networking.k8s.io
+      version: v1
+      kind: NetworkPolicy
+      name: kserve-models-web-app
+      namespace: kubeflow
 
 labels:
   - includeSelectors: false

@@ -26,18 +26,6 @@ data:
                 "type": "item"
             },
             {
-                "icon": "kubeflow:katib",
-                "link": "/katib/",
-                "text": "Katib Experiments",
-                "type": "item"
-            },
-            {
-                "type": "item",
-                "link": "/kserve-endpoints/",
-                "text": "KServe Endpoints",
-                "icon": "kubeflow:models"
-            },
-            {
                 "type": "item",
                 "link": "/mlflow/",
                 "text": "MlFlow",
@@ -102,11 +90,6 @@ data:
                 "desc": "Documentation for Kubeflow Training Operator",
                 "link": "https://www.kubeflow.org/docs/components/training/",
                 "text": "Kubeflow Training Operator Documentation"
-            },
-            {
-                "desc": "Documentation for Katib",
-                "link": "https://www.kubeflow.org/docs/components/katib/",
-                "text": "Katib Documentation"
             }
         ],
         "quickLinks": [

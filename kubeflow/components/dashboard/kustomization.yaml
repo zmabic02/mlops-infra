@@ -7,3 +7,8 @@ patches:
       kind: ConfigMap
       name: centraldashboard-config
       namespace: kubeflow
+  - path: patches/centraldashboard-logout-url.yaml
+    target:
+      kind: Deployment
+      name: centraldashboard
+      namespace: kubeflow
