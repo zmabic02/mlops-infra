@@ -95,6 +95,9 @@ apply-all: validate apply-root ## Validate + apply all
 port-forward: ## Port-forward for ArgoCD UI to http://localhost:8080
 	kubectl port-forward -n argocd svc/argocd-server 8080:80
 
+kubeflow-dash: ## Port-forward Kubeflow dashboard to http://localhost:8081
+	kubectl port-forward -n istio-system svc/istio-ingressgateway 8081:80
+
 restart-argocd: ## Restart ArgoCD controller
 	kubectl rollout restart deployment argocd-application-controller -n argocd
 	kubectl rollout restart deployment argocd-repo-server -n argocd
