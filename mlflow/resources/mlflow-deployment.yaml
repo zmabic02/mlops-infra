@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow
+  namespace: mlflow
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlflow
+  template:
+    metadata:
+      labels:
+        app: mlflow
+    spec:
+      serviceAccountName: mlflow-sa
+      containers:
+        - name: mlflow
+          image: zmabic02/mlflow-custom:v1.0
+          ports:
+            - containerPort: 5000
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgresql-mlflow-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgresql-password
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgresql-mlflow-db
+            - name: MLFLOW_S3_ENDPOINT_URL
+              value: http://minio.mlflow.svc.cluster.local:9000
+            - name: AWS_S3_ADDRESSING_STYLE
+              value: path
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow-artifact-credentials
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow-artifact-credentials
+                  key: AWS_SECRET_ACCESS_KEY
+          command: ["sh", "-c"]
+          args:
+            - |
+              mlflow server \
+                --host=0.0.0.0 \
+                --port=5000 \
+                --backend-store-uri=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@mlflow-postgres:5432/${POSTGRES_DB} \
+                --default-artifact-root=s3://mlflow-bucket \
+                --artifacts-destination s3://mlflow-bucket \
+                --allowed-hosts=*
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2"

@@ -1,1 +1,1 @@
-# Infra for Kubeflow MLFlow project
+# Infrastructure repo for Kubeflow MLFlow project

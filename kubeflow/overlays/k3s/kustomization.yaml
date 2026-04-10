@@ -16,6 +16,7 @@ resources:
   - https://github.com/kubeflow/manifests.git//apps/centraldashboard/overlays/oauth2-proxy?ref=v1.10.0
   - https://github.com/kubeflow/manifests.git//apps/jupyter/notebook-controller/upstream/overlays/kubeflow?ref=v1.10.0
   - https://github.com/kubeflow/manifests.git//apps/jupyter/jupyter-web-app/upstream/overlays/istio?ref=v1.10.0
+  - ../../components/dashboard
   - ../../components/pipelines
 
 labels:

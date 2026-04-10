@@ -2,7 +2,7 @@
 # Makefile for infra repo
 # =============================================================================
 
-.PHONY: help install-argocd-cli argocd-login add-argocd-repo bootstrap validate validate-kubeflow apply-all apply-root port-forward clean restart-argocd
+.PHONY: help install-argocd-cli install-ksops argocd-login add-argocd-repo bootstrap create-sops-age-secret configure-argocd-sops validate validate-kubeflow validate-mlflow apply-all apply-root port-forward clean restart-argocd
 
 GREEN  := \033[0;32m
 YELLOW := \033[0;33m
@@ -13,6 +13,8 @@ ARGOCD_SERVER ?= localhost:8080
 ARGOCD_OPTS ?= --grpc-web --insecure
 ARGOCD_REPO_URL ?= https://github.com/zmabic02/mlops-infra.git
 ARGOCD_REPO_SECRET_NAME ?= repo-mlops-infra
+KSOPS_INSTALL_DIR ?= $(HOME)/.local/bin
+SOPS_AGE_KEY_FILE ?= $(HOME)/.config/sops/age/keys.txt
 
 help: ## Show available commands
 	@echo "========================================"
@@ -31,6 +33,15 @@ install-argocd-cli:
 		rm -f $$tmp_file; \
 		echo "ArgoCD CLI installed"; \
 	)
+
+install-ksops: ## Install KSOPS locally for Kustomize/SOPS validation
+	@mkdir -p $(KSOPS_INSTALL_DIR)
+	@tmp_dir=$$(mktemp -d); \
+		cd $$tmp_dir && \
+		curl -fsSLO https://github.com/viaduct-ai/kustomize-sops/releases/latest/download/ksops_latest_Linux_x86_64.tar.gz && \
+		tar -xzf ksops_latest_Linux_x86_64.tar.gz && \
+		install -m 0755 ksops $(KSOPS_INSTALL_DIR)/ksops && \
+		echo "KSOPS installed to $(KSOPS_INSTALL_DIR)/ksops"
 
 
 argocd-login: install-argocd-cli ## Login to ArgoCD CLI (run make port-forward in another terminal first)
@@ -67,6 +78,17 @@ bootstrap: install-argocd-cli ## Initial installation (k3s + ArgoCD)
 		-f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 	@echo "${GREEN}ArgoCD installed"
 
+create-sops-age-secret: ## Create or update the ArgoCD secret that mounts the local SOPS age key
+	@if [ ! -f $(SOPS_AGE_KEY_FILE) ]; then echo "SOPS age key file not found at $(SOPS_AGE_KEY_FILE)" && exit 1; fi
+	@kubectl -n $(ARGOCD_NAMESPACE) create secret generic sops-age \
+		--from-file=keys.txt=$(SOPS_AGE_KEY_FILE) \
+		--dry-run=client -o yaml | kubectl apply -f -
+
+configure-argocd-sops: ## Patch ArgoCD repo-server and argocd-cm for KSOPS/SOPS support
+	@kubectl patch configmap argocd-cm -n $(ARGOCD_NAMESPACE) --type merge --patch-file argocd/sops/argocd-cm-patch.yaml
+	@kubectl patch deployment argocd-repo-server -n $(ARGOCD_NAMESPACE) --type strategic --patch-file argocd/sops/argocd-repo-server-patch.yaml
+	@kubectl rollout restart deployment argocd-repo-server -n $(ARGOCD_NAMESPACE)
+
 clean: ## Delete entire k3s cluster and kubeconfig
 	@echo "${YELLOW}Cleanup started"
 	./bootstrap/k3s-uninstall.sh
@@ -76,6 +98,7 @@ clean: ## Delete entire k3s cluster and kubeconfig
 validate: ## Validate all manifests (kustomize + kubeconform)
 	@echo "${YELLOW}Validating manifests...${RESET}"
 	kustomize build kubeflow/overlays/k3s >/dev/null
+	PATH="$(KSOPS_INSTALL_DIR):$$PATH" kustomize build --enable-alpha-plugins --enable-exec mlflow >/dev/null
 	kustomize build argocd/applications/ | kubeconform --summary -strict
 	@echo "${GREEN}Validation successful${RESET}"
 
@@ -83,6 +106,11 @@ validate: ## Validate all manifests (kustomize + kubeconform)
 validate-kubeflow: ## Validate Kubeflow kustomization render
 	kustomize build kubeflow/overlays/k3s >/dev/null
 	@echo "${GREEN}Kubeflow render successful${RESET}"
+
+
+validate-mlflow: ## Validate MLflow kustomization render including KSOPS-generated secrets
+	PATH="$(KSOPS_INSTALL_DIR):$$PATH" kustomize build --enable-alpha-plugins --enable-exec mlflow >/dev/null
+	@echo "${GREEN}MLflow render successful${RESET}"
 
 
 apply-root: ## Apply only root App-of-Apps
