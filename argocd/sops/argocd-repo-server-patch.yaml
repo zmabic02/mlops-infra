@@ -9,12 +9,21 @@ spec:
             secretName: sops-age
       initContainers:
         - name: install-ksops
-          image: viaductoss/ksops:v4.4.0
+          image: alpine:3.20
           command: ["/bin/sh", "-c"]
           args:
             - |
-              mv ksops /custom-tools/ksops
-              mv kustomize /custom-tools/kustomize
+              set -eu
+
+              apk add --no-cache curl tar
+
+              tmp_dir="$(mktemp -d)"
+              cd "$tmp_dir"
+
+              curl -fsSLO https://github.com/viaduct-ai/kustomize-sops/releases/latest/download/ksops_latest_Linux_x86_64.tar.gz
+              tar -xzf ksops_latest_Linux_x86_64.tar.gz
+
+              install -m 0755 ksops /custom-tools/ksops
           volumeMounts:
             - mountPath: /custom-tools
               name: custom-tools
@@ -27,8 +36,7 @@ spec:
               value: /.config/sops/age/keys.txt
           volumeMounts:
             - mountPath: /usr/local/bin/kustomize
-              name: custom-tools
-              subPath: kustomize
+              $patch: delete
             - mountPath: /usr/local/bin/ksops
               name: custom-tools
               subPath: ksops
