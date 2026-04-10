@@ -2,22 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - https://github.com/kubeflow/manifests.git//common/cert-manager/base?ref=v1.10.0
-  - https://github.com/kubeflow/manifests.git//common/cert-manager/kubeflow-issuer/base?ref=v1.10.0
-  - https://github.com/kubeflow/manifests.git//common/istio-1-24/istio-crds/base?ref=v1.10.0
-  - https://github.com/kubeflow/manifests.git//common/istio-1-24/istio-namespace/base?ref=v1.10.0
-  - https://github.com/kubeflow/manifests.git//common/istio-1-24/istio-install/overlays/oauth2-proxy?ref=v1.10.0
-  - https://github.com/kubeflow/manifests.git//common/oauth2-proxy/overlays/m2m-dex-only?ref=v1.10.0
-  - https://github.com/kubeflow/manifests.git//common/dex/overlays/oauth2-proxy?ref=v1.10.0
-  - https://github.com/kubeflow/manifests.git//common/kubeflow-namespace/base?ref=v1.10.0
-  - https://github.com/kubeflow/manifests.git//common/kubeflow-roles/base?ref=v1.10.0
-  - https://github.com/kubeflow/manifests.git//common/istio-1-24/kubeflow-istio-resources/base?ref=v1.10.0
-  - https://github.com/kubeflow/manifests.git//apps/profiles/upstream/overlays/kubeflow?ref=v1.10.0
-  - https://github.com/kubeflow/manifests.git//apps/centraldashboard/overlays/oauth2-proxy?ref=v1.10.0
-  - https://github.com/kubeflow/manifests.git//apps/jupyter/notebook-controller/upstream/overlays/kubeflow?ref=v1.10.0
-  - https://github.com/kubeflow/manifests.git//apps/jupyter/jupyter-web-app/upstream/overlays/istio?ref=v1.10.0
+  - https://github.com/kubeflow/manifests.git//example?ref=26.03
   - ../../components/dashboard
-  - ../../components/pipelines
 
 labels:
   - includeSelectors: false

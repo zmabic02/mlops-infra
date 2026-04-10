@@ -13,6 +13,8 @@ spec:
     repoURL: https://github.com/zmabic02/mlops-infra.git
     targetRevision: main
     path: kubeflow/overlays/k3s
+    kustomize:
+      version: v5.2.1
   destination:
     server: https://kubernetes.default.svc
     namespace: kubeflow

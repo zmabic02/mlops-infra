@@ -1,6 +1,0 @@
-# Delete cache deployer as cert-manager provisions the cache-server certificate.
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: kubeflow-pipelines-cache-deployer-clusterrole
-$patch: delete

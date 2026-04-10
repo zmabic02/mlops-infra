@@ -20,9 +20,13 @@ spec:
               tmp_dir="$(mktemp -d)"
               cd "$tmp_dir"
 
+              curl -fsSLO https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.2.1/kustomize_v5.2.1_linux_amd64.tar.gz
+              tar -xzf kustomize_v5.2.1_linux_amd64.tar.gz
+
               curl -fsSLO https://github.com/viaduct-ai/kustomize-sops/releases/latest/download/ksops_latest_Linux_x86_64.tar.gz
               tar -xzf ksops_latest_Linux_x86_64.tar.gz
 
+              install -m 0755 kustomize /custom-tools/kustomize_5_2_1
               install -m 0755 ksops /custom-tools/ksops
           volumeMounts:
             - mountPath: /custom-tools
