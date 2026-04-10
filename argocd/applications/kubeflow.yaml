@@ -106,6 +106,10 @@ spec:
         - /status
       jqPathExpressions:
         - .spec.conversion.webhook.clientConfig.caBundle
+    - group: trainer.kubeflow.org
+      kind: ClusterTrainingRuntime
+      jsonPointers:
+        - /status
     - group: rbac.authorization.k8s.io
       kind: ClusterRole
       name: admission-webhook-kubeflow-poddefaults-admin
