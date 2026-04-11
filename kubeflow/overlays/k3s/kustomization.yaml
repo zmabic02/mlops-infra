@@ -130,6 +130,13 @@ patches:
       kind: DestinationRule
       name: ml-pipeline-ui
       namespace: kubeflow
+  - path: patches/jupyter-web-app-destinationrule.yaml
+    target:
+      group: networking.istio.io
+      version: v1alpha3
+      kind: DestinationRule
+      name: jupyter-web-app
+      namespace: kubeflow
   - path: patches/ml-pipeline-mysql-destinationrule.yaml
     target:
       group: networking.istio.io
