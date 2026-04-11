@@ -62,6 +62,12 @@ patches:
       kind: Deployment
       name: istiod
       namespace: istio-system
+  - path: patches/istio-sidecar-injector-no-cni.yaml
+    target:
+      version: v1
+      kind: ConfigMap
+      name: istio-sidecar-injector
+      namespace: istio-system
   - path: patches/delete.istio-cni-node.yaml
     target:
       group: apps
