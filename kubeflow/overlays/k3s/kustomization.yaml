@@ -123,6 +123,13 @@ patches:
       kind: DestinationRule
       name: ml-pipeline-ui
       namespace: kubeflow
+  - path: patches/ml-pipeline-mysql-destinationrule.yaml
+    target:
+      group: networking.istio.io
+      version: v1alpha3
+      kind: DestinationRule
+      name: ml-pipeline-mysql
+      namespace: kubeflow
   - path: patches/mysql-hostpath-permissions.yaml
     target:
       group: apps
