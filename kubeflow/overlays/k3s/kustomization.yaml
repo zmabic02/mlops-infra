@@ -116,6 +116,13 @@ patches:
       kind: Deployment
       name: metadata-grpc-deployment
       namespace: kubeflow
+  - path: patches/ml-pipeline-ui-destinationrule.yaml
+    target:
+      group: networking.istio.io
+      version: v1alpha3
+      kind: DestinationRule
+      name: ml-pipeline-ui
+      namespace: kubeflow
   - path: patches/mysql-hostpath-permissions.yaml
     target:
       group: apps
