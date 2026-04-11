@@ -34,7 +34,6 @@ sortOptions:
 
 resources:
   - resources/static-pvs.yaml
-  - resources/default-user-rbac.yaml
   - https://github.com/kubeflow/manifests.git//common/cert-manager/overlays/kubeflow?ref=26.03
   - https://github.com/kubeflow/manifests.git//common/istio/istio-crds/base?ref=26.03
   - https://github.com/kubeflow/manifests.git//common/istio/istio-namespace/base?ref=26.03
