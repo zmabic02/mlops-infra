@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-pipeline
+  namespace: kubeflow
+spec:
+  template:
+    spec:
+      containers:
+        - name: ml-pipeline-api-server
+          startupProbe:
+            httpGet:
+              path: /apis/v1beta1/healthz
+              port: http
+              scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 120
+          readinessProbe:
+            httpGet:
+              path: /apis/v1beta1/healthz
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /apis/v1beta1/healthz
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 6

@@ -12,17 +12,19 @@ spec:
             tcpSocket:
               port: grpc-api
             periodSeconds: 5
-            timeoutSeconds: 2
-            failureThreshold: 24
+            timeoutSeconds: 5
+            failureThreshold: 120
           readinessProbe:
             tcpSocket:
               port: grpc-api
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
             periodSeconds: 10
-            timeoutSeconds: 2
+            timeoutSeconds: 5
+            failureThreshold: 6
           livenessProbe:
             tcpSocket:
               port: grpc-api
-            initialDelaySeconds: 15
-            periodSeconds: 10
-            timeoutSeconds: 2
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 6
