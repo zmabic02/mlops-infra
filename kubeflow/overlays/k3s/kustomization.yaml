@@ -109,6 +109,13 @@ patches:
       kind: NetworkPolicy
       name: tensorboards-web-app
       namespace: kubeflow
+  - path: patches/metadata-grpc-probes.yaml
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: metadata-grpc-deployment
+      namespace: kubeflow
   - path: patches/mysql-hostpath-permissions.yaml
     target:
       group: apps
