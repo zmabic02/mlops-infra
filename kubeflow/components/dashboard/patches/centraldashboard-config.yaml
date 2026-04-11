@@ -14,12 +14,6 @@ data:
                 "type": "item"
             },
             {
-                "icon": "assessment",
-                "link": "/tensorboards/",
-                "text": "TensorBoards",
-                "type": "item"
-            },
-            {
                 "icon": "device:storage",
                 "link": "/volumes/",
                 "text": "Volumes",
@@ -85,11 +79,6 @@ data:
                 "desc": "Documentation for Kubeflow Notebooks",
                 "link": "https://www.kubeflow.org/docs/components/notebooks/",
                 "text": "Kubeflow Notebooks Documentation"
-            },
-            {
-                "desc": "Documentation for Kubeflow Training Operator",
-                "link": "https://www.kubeflow.org/docs/components/training/",
-                "text": "Kubeflow Training Operator Documentation"
             }
         ],
         "quickLinks": [

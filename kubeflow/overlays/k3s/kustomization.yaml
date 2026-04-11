@@ -36,7 +36,6 @@ resources:
   - resources/static-pvs.yaml
   - https://github.com/kubeflow/manifests.git//common/cert-manager/overlays/kubeflow?ref=26.03
   - https://github.com/kubeflow/manifests.git//common/istio/istio-crds/base?ref=26.03
-  - https://github.com/kubeflow/manifests.git//common/istio/istio-namespace/base?ref=26.03
   - https://github.com/kubeflow/manifests.git//common/istio/istio-install/overlays/oauth2-proxy?ref=26.03
   - https://github.com/kubeflow/manifests.git//common/oauth2-proxy/overlays/m2m-dex-only?ref=26.03
   - https://github.com/kubeflow/manifests.git//common/dex/overlays/oauth2-proxy?ref=26.03
@@ -51,20 +50,57 @@ resources:
   - https://github.com/kubeflow/manifests.git//applications/profiles/pss?ref=26.03
   - https://github.com/kubeflow/manifests.git//applications/pvcviewer-controller/upstream/base?ref=26.03
   - https://github.com/kubeflow/manifests.git//applications/volumes-web-app/upstream/overlays/istio?ref=26.03
-  - https://github.com/kubeflow/manifests.git//applications/tensorboard/tensorboard-controller/upstream/overlays/kubeflow?ref=26.03
-  - https://github.com/kubeflow/manifests.git//applications/tensorboard/tensorboards-web-app/upstream/overlays/istio?ref=26.03
-  - https://github.com/kubeflow/manifests.git//applications/trainer/overlays?ref=26.03
   - https://github.com/kubeflow/manifests.git//common/user-namespace/base?ref=26.03
-  - https://github.com/kubeflow/manifests.git//applications/spark/spark-operator/overlays/kubeflow?ref=26.03
   - ../../components/dashboard
 
 patches:
-  - path: patches/ml-pipeline-probes.yaml
+  - path: patches/istiod-disable-cni.yaml
     target:
       group: apps
       version: v1
       kind: Deployment
-      name: ml-pipeline
+      name: istiod
+      namespace: istio-system
+  - path: patches/delete.istio-cni-node.yaml
+    target:
+      group: apps
+      version: v1
+      kind: DaemonSet
+      name: istio-cni-node
+      namespace: kube-system
+  - path: patches/namespace.kubeflow-pss.yaml
+    target:
+      version: v1
+      kind: Namespace
+      name: kubeflow
+  - path: patches/namespace.kubeflow-user-example-com-pss.yaml
+    target:
+      version: v1
+      kind: Namespace
+      name: kubeflow-user-example-com
+  - path: patches/namespace.oauth2-proxy-pss.yaml
+    target:
+      version: v1
+      kind: Namespace
+      name: oauth2-proxy
+  - path: patches/namespace.auth-pss.yaml
+    target:
+      version: v1
+      kind: Namespace
+      name: auth
+  - path: patches/delete.networkpolicy.spark-operator-webhook.yaml
+    target:
+      group: networking.k8s.io
+      version: v1
+      kind: NetworkPolicy
+      name: spark-operator-webhook
+      namespace: kubeflow
+  - path: patches/delete.networkpolicy.tensorboards-web-app.yaml
+    target:
+      group: networking.k8s.io
+      version: v1
+      kind: NetworkPolicy
+      name: tensorboards-web-app
       namespace: kubeflow
   - path: patches/mysql-hostpath-permissions.yaml
     target:
@@ -79,48 +115,6 @@ patches:
       version: v1
       kind: Deployment
       name: seaweedfs
-      namespace: kubeflow
-  - path: patches/istio-cni-k3s.yaml
-    target:
-      group: apps
-      version: v1
-      kind: DaemonSet
-      name: istio-cni-node
-      namespace: kube-system
-  - path: patches/delete.networkpolicy.katib-controller.yaml
-    target:
-      group: networking.k8s.io
-      version: v1
-      kind: NetworkPolicy
-      name: katib-controller
-      namespace: kubeflow
-  - path: patches/delete.networkpolicy.katib-db-manager.yaml
-    target:
-      group: networking.k8s.io
-      version: v1
-      kind: NetworkPolicy
-      name: katib-db-manager
-      namespace: kubeflow
-  - path: patches/delete.networkpolicy.katib-ui.yaml
-    target:
-      group: networking.k8s.io
-      version: v1
-      kind: NetworkPolicy
-      name: katib-ui
-      namespace: kubeflow
-  - path: patches/delete.networkpolicy.kserve.yaml
-    target:
-      group: networking.k8s.io
-      version: v1
-      kind: NetworkPolicy
-      name: kserve
-      namespace: kubeflow
-  - path: patches/delete.networkpolicy.kserve-models-web-app.yaml
-    target:
-      group: networking.k8s.io
-      version: v1
-      kind: NetworkPolicy
-      name: kserve-models-web-app
       namespace: kubeflow
 
 labels:

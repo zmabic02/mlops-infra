@@ -49,17 +49,7 @@ spec:
         - .webhooks[]?.clientConfig.caBundle
     - group: admissionregistration.k8s.io
       kind: MutatingWebhookConfiguration
-      name: jobset-mutating-webhook-configuration
-      jqPathExpressions:
-        - .webhooks[]?.clientConfig.caBundle
-    - group: admissionregistration.k8s.io
-      kind: MutatingWebhookConfiguration
       name: pvcviewer-mutating-webhook-configuration
-      jqPathExpressions:
-        - .webhooks[]?.clientConfig.caBundle
-    - group: admissionregistration.k8s.io
-      kind: MutatingWebhookConfiguration
-      name: spark-operator-webhook
       jqPathExpressions:
         - .webhooks[]?.clientConfig.caBundle
     - group: admissionregistration.k8s.io
@@ -74,22 +64,7 @@ spec:
         - .webhooks[]?.clientConfig.caBundle
     - group: admissionregistration.k8s.io
       kind: ValidatingWebhookConfiguration
-      name: jobset-validating-webhook-configuration
-      jqPathExpressions:
-        - .webhooks[]?.clientConfig.caBundle
-    - group: admissionregistration.k8s.io
-      kind: ValidatingWebhookConfiguration
       name: pvcviewer-validating-webhook-configuration
-      jqPathExpressions:
-        - .webhooks[]?.clientConfig.caBundle
-    - group: admissionregistration.k8s.io
-      kind: ValidatingWebhookConfiguration
-      name: spark-operator-webhook
-      jqPathExpressions:
-        - .webhooks[]?.clientConfig.caBundle
-    - group: admissionregistration.k8s.io
-      kind: ValidatingWebhookConfiguration
-      name: validator.trainer.kubeflow.org
       jqPathExpressions:
         - .webhooks[]?.clientConfig.caBundle
     - group: apiextensions.k8s.io
@@ -106,10 +81,6 @@ spec:
         - /status
       jqPathExpressions:
         - .spec.conversion.webhook.clientConfig.caBundle
-    - group: trainer.kubeflow.org
-      kind: ClusterTrainingRuntime
-      jsonPointers:
-        - /status
     - group: rbac.authorization.k8s.io
       kind: ClusterRole
       name: admission-webhook-kubeflow-poddefaults-admin
@@ -143,11 +114,6 @@ spec:
     - group: rbac.authorization.k8s.io
       kind: ClusterRole
       name: kubeflow-pipelines-view
-      jqPathExpressions:
-        - .rules
-    - group: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: kubeflow-trainer-admin
       jqPathExpressions:
         - .rules
     - group: rbac.authorization.k8s.io

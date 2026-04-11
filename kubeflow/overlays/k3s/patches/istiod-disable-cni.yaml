@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istiod
+  namespace: istio-system
+spec:
+  template:
+    spec:
+      containers:
+        - name: discovery
+          env:
+            - name: ENABLE_NATIVE_SIDECARS
+              value: "true"
+            - name: ISTIO_CNI_ENABLED
+              value: "false"
+            - name: INJECTION_WEBHOOK_CONFIG_NAME
+              value: istio-sidecar-injector
+            - name: VALIDATION_WEBHOOK_CONFIG_NAME
+              value: istio-validator-istio-system
+            - name: EXTERNAL_ISTIOD
+              value: "false"
+            - name: PILOT_CERT_PROVIDER
+              value: istiod
