@@ -33,7 +33,6 @@ sortOptions:
       - ValidatingWebhookConfiguration
 
 resources:
-  - resources/static-pvs.yaml
   - https://github.com/kubeflow/manifests.git//common/cert-manager/overlays/kubeflow?ref=26.03
   - https://github.com/kubeflow/manifests.git//common/istio/istio-crds/base?ref=26.03
   - https://github.com/kubeflow/manifests.git//common/istio/istio-namespace/base?ref=26.03
@@ -169,5 +168,5 @@ patches:
 labels:
   - includeSelectors: false
     pairs:
-      app.kubernetes.io/managed-by: argocd
+      app.kubernetes.io/managed-by: kubeflow-script
       app.kubernetes.io/part-of: kubeflow

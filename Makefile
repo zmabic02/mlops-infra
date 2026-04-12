@@ -2,7 +2,7 @@
 # Makefile for infra repo
 # =============================================================================
 
-.PHONY: help install-argocd-cli install-ksops argocd-login add-argocd-repo bootstrap create-sops-age-secret configure-argocd-sops validate validate-kubeflow validate-mlflow apply-all apply-root port-forward clean restart-argocd
+.PHONY: help install-argocd-cli install-ksops install-kubeflow-kustomize argocd-login add-argocd-repo bootstrap create-sops-age-secret configure-argocd-sops install-kubeflow uninstall-kubeflow validate validate-kubeflow validate-mlflow apply-mlflow-app port-forward clean restart-argocd kubeflow-dash
 
 GREEN  := \033[0;32m
 YELLOW := \033[0;33m
@@ -15,6 +15,7 @@ ARGOCD_REPO_URL ?= https://github.com/zmabic02/mlops-infra.git
 ARGOCD_REPO_SECRET_NAME ?= repo-mlops-infra
 KSOPS_INSTALL_DIR ?= $(HOME)/.local/bin
 SOPS_AGE_KEY_FILE ?= $(HOME)/.config/sops/age/keys.txt
+KUBEFLOW_KUSTOMIZE_BIN ?= $(HOME)/.local/bin/kustomize_5_2_1
 
 help: ## Show available commands
 	@echo "========================================"
@@ -42,6 +43,15 @@ install-ksops: ## Install KSOPS locally for Kustomize/SOPS validation
 		tar -xzf ksops_latest_Linux_x86_64.tar.gz && \
 		install -m 0755 ksops $(KSOPS_INSTALL_DIR)/ksops && \
 		echo "KSOPS installed to $(KSOPS_INSTALL_DIR)/ksops"
+
+install-kubeflow-kustomize: ## Install the pinned Kustomize version used for Kubeflow rendering
+	@mkdir -p $(dir $(KUBEFLOW_KUSTOMIZE_BIN))
+	@tmp_dir=$$(mktemp -d); \
+		cd $$tmp_dir && \
+		curl -fsSLO https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.2.1/kustomize_v5.2.1_linux_amd64.tar.gz && \
+		tar -xzf kustomize_v5.2.1_linux_amd64.tar.gz && \
+		install -m 0755 kustomize $(KUBEFLOW_KUSTOMIZE_BIN) && \
+		echo "Kubeflow Kustomize installed to $(KUBEFLOW_KUSTOMIZE_BIN)"
 
 
 argocd-login: install-argocd-cli ## Login to ArgoCD CLI (run make port-forward in another terminal first)
@@ -89,6 +99,12 @@ configure-argocd-sops: ## Patch ArgoCD repo-server and argocd-cm for KSOPS/SOPS 
 	@kubectl patch deployment argocd-repo-server -n $(ARGOCD_NAMESPACE) --type strategic --patch-file argocd/sops/argocd-repo-server-patch.yaml
 	@kubectl rollout restart deployment argocd-repo-server -n $(ARGOCD_NAMESPACE)
 
+install-kubeflow: install-kubeflow-kustomize ## Install the selected Kubeflow components for local k3s/WSL
+	KUSTOMIZE_BIN="$(KUBEFLOW_KUSTOMIZE_BIN)" ./kubeflow/install.sh
+
+uninstall-kubeflow: install-kubeflow-kustomize ## Uninstall the scripted Kubeflow installation from the cluster
+	KUSTOMIZE_BIN="$(KUBEFLOW_KUSTOMIZE_BIN)" ./kubeflow/uninstall.sh
+
 clean: ## Delete entire k3s cluster and kubeconfig
 	@echo "${YELLOW}Cleanup started"
 	./bootstrap/k3s-uninstall.sh
@@ -97,14 +113,19 @@ clean: ## Delete entire k3s cluster and kubeconfig
 
 validate: ## Validate all manifests (kustomize + kubeconform)
 	@echo "${YELLOW}Validating manifests...${RESET}"
-	kustomize build kubeflow/overlays/k3s >/dev/null
+	$(KUBEFLOW_KUSTOMIZE_BIN) build kubeflow/overlays/k3s >/dev/null
 	PATH="$(KSOPS_INSTALL_DIR):$$PATH" kustomize build --enable-alpha-plugins --enable-exec mlflow >/dev/null
-	kustomize build argocd/applications/ | kubeconform --summary -strict
+	@if command -v kubeconform >/dev/null 2>&1; then \
+		kustomize build argocd/applications/ | kubeconform --summary -strict; \
+	else \
+		echo "kubeconform not found, skipping schema validation for Argo CD manifests"; \
+		kustomize build argocd/applications/ >/dev/null; \
+	fi
 	@echo "${GREEN}Validation successful${RESET}"
 
 
-validate-kubeflow: ## Validate Kubeflow kustomization render
-	kustomize build kubeflow/overlays/k3s >/dev/null
+validate-kubeflow: install-kubeflow-kustomize ## Validate Kubeflow kustomization render
+	$(KUBEFLOW_KUSTOMIZE_BIN) build kubeflow/overlays/k3s >/dev/null
 	@echo "${GREEN}Kubeflow render successful${RESET}"
 
 
@@ -113,12 +134,10 @@ validate-mlflow: ## Validate MLflow kustomization render including KSOPS-generat
 	@echo "${GREEN}MLflow render successful${RESET}"
 
 
-apply-root: ## Apply only root App-of-Apps
-	@echo "${YELLOW}Applying root App-of-Apps...${RESET}"
+apply-mlflow-app: ## Apply the MLflow Argo CD Application
+	@echo "${YELLOW}Applying MLflow Argo CD Application...${RESET}"
 	kustomize build argocd/applications/ | kubectl apply -f -
 	@echo "${GREEN}Done${RESET}"
-
-apply-all: validate apply-root ## Validate + apply all
 
 port-forward: ## Port-forward for ArgoCD UI to http://localhost:8080
 	kubectl port-forward -n argocd svc/argocd-server 8080:80
