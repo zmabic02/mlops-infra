@@ -52,9 +52,13 @@ resources:
   - https://github.com/kubeflow/manifests.git//applications/volumes-web-app/upstream/overlays/istio?ref=26.03
   - https://github.com/kubeflow/manifests.git//common/user-namespace/base?ref=26.03
   - patches/default-user-rbac.yaml
-  - ../../components/dashboard
 
 patches:
+  - path: patches/centraldashboard-config.yaml
+    target:
+      kind: ConfigMap
+      name: centraldashboard-config
+      namespace: kubeflow
   - path: patches/istiod-disable-cni.yaml
     target:
       group: apps
@@ -75,96 +79,6 @@ patches:
       kind: DaemonSet
       name: istio-cni-node
       namespace: kube-system
-  - path: patches/namespace.kubeflow-pss.yaml
-    target:
-      version: v1
-      kind: Namespace
-      name: kubeflow
-  - path: patches/namespace.kubeflow-user-example-com-pss.yaml
-    target:
-      version: v1
-      kind: Namespace
-      name: kubeflow-user-example-com
-  - path: patches/namespace.oauth2-proxy-pss.yaml
-    target:
-      version: v1
-      kind: Namespace
-      name: oauth2-proxy
-  - path: patches/namespace.auth-pss.yaml
-    target:
-      version: v1
-      kind: Namespace
-      name: auth
-  - path: patches/delete.networkpolicy.spark-operator-webhook.yaml
-    target:
-      group: networking.k8s.io
-      version: v1
-      kind: NetworkPolicy
-      name: spark-operator-webhook
-      namespace: kubeflow
-  - path: patches/delete.networkpolicy.tensorboards-web-app.yaml
-    target:
-      group: networking.k8s.io
-      version: v1
-      kind: NetworkPolicy
-      name: tensorboards-web-app
-      namespace: kubeflow
-  - path: patches/metadata-grpc-probes.yaml
-    target:
-      group: apps
-      version: v1
-      kind: Deployment
-      name: metadata-grpc-deployment
-      namespace: kubeflow
-  - path: patches/ml-pipeline-probes.yaml
-    target:
-      group: apps
-      version: v1
-      kind: Deployment
-      name: ml-pipeline
-      namespace: kubeflow
-  - path: patches/ml-pipeline-ui-destinationrule.yaml
-    target:
-      group: networking.istio.io
-      version: v1alpha3
-      kind: DestinationRule
-      name: ml-pipeline-ui
-      namespace: kubeflow
-  - path: patches/jupyter-web-app-destinationrule.yaml
-    target:
-      group: networking.istio.io
-      version: v1alpha3
-      kind: DestinationRule
-      name: jupyter-web-app
-      namespace: kubeflow
-  - path: patches/ml-pipeline-mysql-destinationrule.yaml
-    target:
-      group: networking.istio.io
-      version: v1alpha3
-      kind: DestinationRule
-      name: ml-pipeline-mysql
-      namespace: kubeflow
-  - path: patches/mysql-hostpath-permissions.yaml
-    target:
-      group: apps
-      version: v1
-      kind: Deployment
-      name: mysql
-      namespace: kubeflow
-  - path: patches/mysql-version-compat.yaml
-    target:
-      group: apps
-      version: v1
-      kind: Deployment
-      name: mysql
-      namespace: kubeflow
-  - path: patches/seaweedfs-hostpath-permissions.yaml
-    target:
-      group: apps
-      version: v1
-      kind: Deployment
-      name: seaweedfs
-      namespace: kubeflow
 
 labels:
   - includeSelectors: false
