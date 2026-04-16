@@ -51,7 +51,6 @@ resources:
   - https://github.com/kubeflow/manifests.git//applications/pvcviewer-controller/upstream/base?ref=26.03
   - https://github.com/kubeflow/manifests.git//applications/volumes-web-app/upstream/overlays/istio?ref=26.03
   - https://github.com/kubeflow/manifests.git//common/user-namespace/base?ref=26.03
-  - patches/default-user-rbac.yaml
 
 patches:
   - path: patches/centraldashboard-config.yaml

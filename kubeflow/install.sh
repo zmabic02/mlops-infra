@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 OVERLAY_DIR="${SCRIPT_DIR}/overlays/k3s"
+DEFAULT_USER_RBAC_FILE="${OVERLAY_DIR}/patches/default-user-rbac.yaml"
 DEFAULT_KUSTOMIZE_BIN="${HOME}/.local/bin/kustomize_5_2_1"
 KUSTOMIZE_BIN=${KUSTOMIZE_BIN:-$DEFAULT_KUSTOMIZE_BIN}
 KUBECTL_BIN=${KUBECTL_BIN:-kubectl}
@@ -27,6 +28,29 @@ wait_for_deployment() {
 
   echo "Waiting for deployment/${name} in namespace ${namespace}..."
   "$KUBECTL_BIN" -n "$namespace" rollout status deployment/"$name" --timeout="$timeout"
+}
+
+wait_for_namespace() {
+  local namespace=$1
+  local attempts=${2:-60}
+  local sleep_seconds=${3:-5}
+
+  echo "Waiting for namespace/${namespace}..."
+  for ((attempt = 1; attempt <= attempts; attempt++)); do
+    if "$KUBECTL_BIN" get namespace "$namespace" >/dev/null 2>&1; then
+      return 0
+    fi
+
+    sleep "$sleep_seconds"
+  done
+
+  echo "Namespace ${namespace} was not created in time." >&2
+  return 1
+}
+
+apply_default_user_rbac() {
+  echo "Applying fallback RBAC for the default Kubeflow profile..."
+  "$KUBECTL_BIN" apply --server-side --force-conflicts -f "$DEFAULT_USER_RBAC_FILE"
 }
 
 require_binary "$KUSTOMIZE_BIN"
@@ -64,6 +88,8 @@ wait_for_deployment kubeflow centraldashboard 600s
 wait_for_deployment kubeflow jupyter-web-app-deployment 600s
 wait_for_deployment kubeflow notebook-controller-deployment 600s
 wait_for_deployment kubeflow profiles-deployment 600s
+wait_for_namespace kubeflow-user-example-com 60 5
+apply_default_user_rbac
 wait_for_deployment kubeflow pvcviewer-controller-manager 600s
 wait_for_deployment kubeflow volumes-web-app-deployment 600s
 
