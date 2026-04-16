@@ -21,13 +21,50 @@ require_binary() {
   fi
 }
 
+describe_failed_deployment() {
+  local namespace=$1
+  local name=$2
+  local service_account
+  local replicaset
+
+  echo >&2
+  echo "Deployment rollout failed for ${namespace}/${name}. Collecting diagnostics..." >&2
+  "$KUBECTL_BIN" -n "$namespace" describe deployment "$name" >&2 || true
+
+  service_account=$("$KUBECTL_BIN" -n "$namespace" get deployment "$name" -o jsonpath='{.spec.template.spec.serviceAccountName}' 2>/dev/null || true)
+  if [[ -n "$service_account" ]]; then
+    echo >&2
+    echo "ServiceAccount ${namespace}/${service_account}:" >&2
+    "$KUBECTL_BIN" -n "$namespace" get serviceaccount "$service_account" >&2 || true
+  fi
+
+  replicaset=$(
+    "$KUBECTL_BIN" -n "$namespace" get rs -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.ownerReferences[0].name}{"\n"}{end}' 2>/dev/null \
+      | awk -v deployment_name="$name" '$2 == deployment_name { print $1 }' \
+      | tail -n 1
+  )
+
+  if [[ -n "$replicaset" ]]; then
+    echo >&2
+    echo "ReplicaSet ${namespace}/${replicaset}:" >&2
+    "$KUBECTL_BIN" -n "$namespace" describe rs "$replicaset" >&2 || true
+  fi
+
+  echo >&2
+  echo "Recent events in namespace ${namespace}:" >&2
+  "$KUBECTL_BIN" -n "$namespace" get events --sort-by=.metadata.creationTimestamp | tail -n 30 >&2 || true
+}
+
 wait_for_deployment() {
   local namespace=$1
   local name=$2
   local timeout=${3:-600s}
 
   echo "Waiting for deployment/${name} in namespace ${namespace}..."
-  "$KUBECTL_BIN" -n "$namespace" rollout status deployment/"$name" --timeout="$timeout"
+  if ! "$KUBECTL_BIN" -n "$namespace" rollout status deployment/"$name" --timeout="$timeout"; then
+    describe_failed_deployment "$namespace" "$name"
+    return 1
+  fi
 }
 
 wait_for_namespace() {
