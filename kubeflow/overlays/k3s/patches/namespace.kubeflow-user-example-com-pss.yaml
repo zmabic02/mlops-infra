@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubeflow-user-example-com
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privilegedapiVersion: v1
+kind: Namespace
+metadata:
+  name: kubeflow-user-example-com
+  labels:
+    pipelines.kubeflow.org/enabled: "true"
+    pod-security.kubernetes.io/enforce: privileged

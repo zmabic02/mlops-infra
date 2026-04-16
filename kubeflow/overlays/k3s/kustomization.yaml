@@ -58,6 +58,16 @@ patches:
       kind: ConfigMap
       name: centraldashboard-config
       namespace: kubeflow
+  - path: patches/namespace.kubeflow-pss.yaml
+    target:
+      version: v1
+      kind: Namespace
+      name: kubeflow
+  - path: patches/namespace.kubeflow-user-example-com-pss.yaml
+    target:
+      version: v1
+      kind: Namespace
+      name: kubeflow-user-example-com
   - path: patches/istiod-disable-cni.yaml
     target:
       group: apps
