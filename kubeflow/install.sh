@@ -90,6 +90,17 @@ apply_default_user_rbac() {
   "$KUBECTL_BIN" apply --server-side --force-conflicts -f "$DEFAULT_USER_RBAC_FILE"
 }
 
+label_namespace_privileged() {
+  local namespace=$1
+
+  echo "Setting Pod Security labels on namespace/${namespace}..."
+  "$KUBECTL_BIN" label namespace "$namespace" \
+    pod-security.kubernetes.io/enforce=privileged \
+    pod-security.kubernetes.io/audit=privileged \
+    pod-security.kubernetes.io/warn=privileged \
+    --overwrite
+}
+
 require_binary "$KUSTOMIZE_BIN"
 require_binary "$KUBECTL_BIN"
 
@@ -120,12 +131,14 @@ wait_for_deployment istio-system istio-ingressgateway 600s
 wait_for_deployment auth dex 300s
 wait_for_deployment oauth2-proxy oauth2-proxy 300s
 
+label_namespace_privileged kubeflow
 wait_for_deployment kubeflow admission-webhook-deployment 600s
 wait_for_deployment kubeflow centraldashboard 600s
 wait_for_deployment kubeflow jupyter-web-app-deployment 600s
 wait_for_deployment kubeflow notebook-controller-deployment 600s
 wait_for_deployment kubeflow profiles-deployment 600s
 wait_for_namespace kubeflow-user-example-com 60 5
+label_namespace_privileged kubeflow-user-example-com
 apply_default_user_rbac
 wait_for_deployment kubeflow pvcviewer-controller-manager 600s
 wait_for_deployment kubeflow volumes-web-app-deployment 600s
