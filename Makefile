@@ -92,11 +92,22 @@ bootstrap: install-argocd-cli ## Initial installation (k3s + ArgoCD)
 	@echo "${GREEN}ArgoCD installed"
 
 install-gpu-plugin: ## Install the NVIDIA device plugin on the current cluster
+	kubectl get runtimeclass nvidia >/dev/null
 	kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/$(NVIDIA_DEVICE_PLUGIN_VERSION)/deployments/static/nvidia-device-plugin.yml
+	kubectl patch daemonset nvidia-device-plugin-daemonset -n kube-system --type='merge' -p '{"spec":{"template":{"spec":{"runtimeClassName":"nvidia"}}}}'
 	kubectl rollout status daemonset/nvidia-device-plugin-daemonset -n kube-system --timeout=180s
 
 validate-gpu: ## Check whether the cluster advertises NVIDIA GPU resources
 	kubectl get daemonset -n kube-system nvidia-device-plugin-daemonset
+	kest_ready=$$(kubectl get daemonset -n kube-system nvidia-device-plugin-daemonset -o jsonpath='{.status.numberReady} {.status.desiredNumberScheduled}'); \
+	if [ "$$kest_ready" = "0 0" ]; then \
+		echo "NVIDIA device plugin daemonset is not scheduled on any node"; \
+		exit 1; \
+	fi; \
+	if [ "$${kest_ready%% *}" != "$${kest_ready##* }" ]; then \
+		echo "NVIDIA device plugin daemonset is not fully ready: $$kest_ready"; \
+		exit 1; \
+	fi
 	kubectl describe node $$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}') | grep 'nvidia.com/gpu'
 
 create-sops-age-secret: ## Create or update the ArgoCD secret that mounts the local SOPS age key
