@@ -2,7 +2,7 @@
 # Makefile for infra repo
 # =============================================================================
 
-.PHONY: help install-argocd-cli install-ksops install-kubeflow-kustomize argocd-login add-argocd-repo bootstrap create-sops-age-secret configure-argocd-sops install-kubeflow uninstall-kubeflow validate validate-kubeflow validate-mlflow apply-mlflow-app port-forward clean restart-argocd kubeflow-dash
+.PHONY: help install-argocd-cli install-ksops install-kubeflow-kustomize argocd-login add-argocd-repo bootstrap install-gpu-plugin validate-gpu create-sops-age-secret configure-argocd-sops install-kubeflow uninstall-kubeflow validate validate-kubeflow validate-mlflow apply-mlflow-app port-forward clean restart-argocd kubeflow-dash
 
 GREEN  := \033[0;32m
 YELLOW := \033[0;33m
@@ -16,6 +16,8 @@ ARGOCD_REPO_SECRET_NAME ?= repo-mlops-infra
 KSOPS_INSTALL_DIR ?= $(HOME)/.local/bin
 SOPS_AGE_KEY_FILE ?= $(HOME)/.config/sops/age/keys.txt
 KUBEFLOW_KUSTOMIZE_BIN ?= $(HOME)/.local/bin/kustomize_5_2_1
+ENABLE_GPU ?= false
+NVIDIA_DEVICE_PLUGIN_VERSION ?= v0.17.1
 
 help: ## Show available commands
 	@echo "========================================"
@@ -80,13 +82,22 @@ add-argocd-repo: ## Register private GitHub repo in ArgoCD using a Kubernetes Se
 
 bootstrap: install-argocd-cli ## Initial installation (k3s + ArgoCD)
 	@echo "${YELLOW}Starting bootstrap...${RESET}"
-	./bootstrap/k3s-install.sh
+	ENABLE_GPU=$(ENABLE_GPU) ./bootstrap/k3s-install.sh
+	@if [ "$(ENABLE_GPU)" = "true" ]; then $(MAKE) install-gpu-plugin; fi
 	kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 	kubectl apply -n argocd \
 		--server-side \
 		--force-conflicts \
 		-f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 	@echo "${GREEN}ArgoCD installed"
+
+install-gpu-plugin: ## Install the NVIDIA device plugin on the current cluster
+	kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/$(NVIDIA_DEVICE_PLUGIN_VERSION)/deployments/static/nvidia-device-plugin.yml
+	kubectl rollout status daemonset/nvidia-device-plugin-daemonset -n kube-system --timeout=180s
+
+validate-gpu: ## Check whether the cluster advertises NVIDIA GPU resources
+	kubectl get daemonset -n kube-system nvidia-device-plugin-daemonset
+	kubectl describe node $$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}') | grep 'nvidia.com/gpu'
 
 create-sops-age-secret: ## Create or update the ArgoCD secret that mounts the local SOPS age key
 	@if [ ! -f $(SOPS_AGE_KEY_FILE) ]; then echo "SOPS age key file not found at $(SOPS_AGE_KEY_FILE)" && exit 1; fi
