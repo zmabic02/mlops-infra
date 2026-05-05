@@ -89,13 +89,6 @@ patches:
       kind: DaemonSet
       name: istio-cni-node
       namespace: kube-system
-  - path: patches/workflow-controller-gpu-runtimeclass.yaml
-    target:
-      version: v1
-      kind: ConfigMap
-      name: workflow-controller-configmap
-      namespace: kubeflow
-
 labels:
   - includeSelectors: false
     pairs:
