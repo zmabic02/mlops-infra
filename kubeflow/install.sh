@@ -156,6 +156,3 @@ wait_for_deployment kubeflow ml-pipeline-viewer-crd 900s
 
 echo
 echo "Kubeflow install finished."
-echo "Port-forward the dashboard with: make kubeflow-dash"
-echo "Default login: user@example.com / 12341234"
-echo "Apply MLflow afterwards with: make apply-mlflow-app"
