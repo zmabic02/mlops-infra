@@ -20,13 +20,9 @@ ENABLE_GPU ?= false
 NVIDIA_DEVICE_PLUGIN_VERSION ?= v0.17.1
 
 help: ## Show available commands
-	@echo "========================================"
-	@echo "  Available commands:"
-	@echo "========================================"
 	@awk 'BEGIN {FS = ":.*##"; printf "\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  ${GREEN}%-25s${RESET} %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
-# Automatska instalacija argocd CLI (Linux x86_64)
-install-argocd-cli:
+install-argocd-cli:	## automatic ArgoCD CLI install
 	@command -v argocd >/dev/null 2>&1 && echo "argocd CLI already installed" || ( \
 		echo "Installing ArgoCD CLI..."; \
 		tmp_file=$$(mktemp); \
@@ -56,7 +52,7 @@ install-kubeflow-kustomize: ## Install the pinned Kustomize version used for Kub
 		echo "Kubeflow Kustomize installed to $(KUBEFLOW_KUSTOMIZE_BIN)"
 
 
-argocd-login: install-argocd-cli ## Login to ArgoCD CLI (run make port-forward in another terminal first)
+argocd-login: install-argocd-cli ## Login to ArgoCD CLI (needs make argocd-dash)
 	@ADMIN_PASSWORD=$$(kubectl -n $(ARGOCD_NAMESPACE) get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d); \
 	argocd login $(ARGOCD_SERVER) --username admin --password "$$ADMIN_PASSWORD" $(ARGOCD_OPTS)
 
@@ -161,7 +157,7 @@ apply-mlflow-app: ## Apply the MLflow Argo CD Application
 	kustomize build argocd/applications/ | kubectl apply -f -
 	@echo "${GREEN}Done${RESET}"
 
-port-forward: ## Port-forward for ArgoCD UI to http://localhost:8080
+argocd-dash: ## Port-forward for ArgoCD UI to http://localhost:8080
 	kubectl port-forward -n argocd svc/argocd-server 8080:80
 
 kubeflow-dash: ## Port-forward Kubeflow dashboard to http://localhost:8081
