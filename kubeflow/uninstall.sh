@@ -29,6 +29,3 @@ trap 'rm -f "$manifest_file"' EXIT
 "$KUBECTL_BIN" delete --ignore-not-found -f "$manifest_file" || true
 
 "$KUBECTL_BIN" delete namespace kubeflow kubeflow-user-example-com auth oauth2-proxy istio-system cert-manager --ignore-not-found || true
-
-echo "Kubeflow uninstall requested."
-echo "If any namespace remains Terminating, inspect finalizers on the target cluster before retrying."
