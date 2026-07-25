@@ -10,7 +10,7 @@ sudo apt-get update
 sudo apt-get install -y ca-certificates curl gnupg
 
 curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey \
-  | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+  | sudo gpg --dearmor --yes -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
 
 curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \
   | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' \
@@ -21,5 +21,10 @@ sudo apt-get install -y nvidia-container-toolkit nvidia-container-runtime
 
 if ! command -v nvidia-container-runtime >/dev/null 2>&1; then
   echo "nvidia-container-runtime was not installed successfully." >&2
+  exit 1
+fi
+
+if ! command -v nvidia-ctk >/dev/null 2>&1; then
+  echo "nvidia-ctk was not installed successfully." >&2
   exit 1
 fi

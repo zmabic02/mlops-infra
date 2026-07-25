@@ -96,7 +96,17 @@ validate-gpu: ## Check whether the cluster advertises NVIDIA GPU resources
 		echo "NVIDIA device plugin daemonset is not fully ready: $$kest_ready"; \
 		exit 1; \
 	fi
-	kubectl describe node $$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}') | grep 'nvidia.com/gpu'
+	@node_name=$$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}'); \
+	gpu_capacity=$$(kubectl get node $$node_name -o jsonpath='{.status.capacity.nvidia\.com/gpu}'); \
+	if [ -z "$$gpu_capacity" ]; then \
+		echo "NVIDIA device plugin pod is running, but node $$node_name advertises no nvidia.com/gpu resource."; \
+		echo "Likely causes: k3s is not using the NVIDIA runtime as default for the plugin pod, or the runtime cannot discover the host GPU."; \
+		echo "Recent device plugin logs:"; \
+		kubectl logs -n kube-system daemonset/nvidia-device-plugin-daemonset --tail=20; \
+		exit 1; \
+	fi; \
+	echo "Detected nvidia.com/gpu capacity on $$node_name: $$gpu_capacity"; \
+	kubectl describe node $$node_name | grep 'nvidia.com/gpu'
 
 create-sops-age-secret: ## Create or update the ArgoCD secret that mounts the local SOPS age key
 	@if [ ! -f $(SOPS_AGE_KEY_FILE) ]; then echo "SOPS age key file not found at $(SOPS_AGE_KEY_FILE)" && exit 1; fi
