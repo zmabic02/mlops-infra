@@ -2,7 +2,7 @@
 # Makefile for infra repo
 # =============================================================================
 
-.PHONY: help install-argocd-cli install-ksops install-kubeflow-kustomize argocd-login add-argocd-repo bootstrap install-gpu-plugin validate-gpu create-sops-age-secret configure-argocd-sops install-kubeflow uninstall-kubeflow validate validate-kubeflow validate-mlflow apply-mlflow-app port-forward clean restart-argocd kubeflow-dash
+.PHONY: help install-argocd-cli install-ksops install-kubeflow-kustomize argocd-login add-argocd-repo bootstrap install-gpu-plugin configure-nvidia-cdi validate-gpu create-sops-age-secret configure-argocd-sops install-kubeflow uninstall-kubeflow validate validate-kubeflow validate-mlflow apply-mlflow-app port-forward clean restart-argocd kubeflow-dash
 
 ARGOCD_NAMESPACE ?= argocd
 ARGOCD_SERVER ?= localhost:8080
@@ -83,6 +83,15 @@ install-gpu-plugin: ## Install the NVIDIA device plugin on the current cluster
 		--from-file=config=bootstrap/nvidia-device-plugin/time-slicing-config.yaml \
 		--dry-run=client -o yaml | kubectl apply -f -
 	kubectl patch daemonset nvidia-device-plugin-daemonset -n kube-system --type='strategic' --patch-file bootstrap/nvidia-device-plugin/daemonset-patch.yaml
+	kubectl rollout status daemonset/nvidia-device-plugin-daemonset -n kube-system --timeout=180s
+
+configure-nvidia-cdi: ## Repair k3s's WSL2 NVIDIA CDI runtime configuration, then restart k3s
+	@if ! grep -qi microsoft /proc/version; then echo "This repair target is only required on WSL2."; exit 0; fi
+	sudo mkdir -p /var/run/cdi
+	sudo nvidia-ctk cdi generate --output=/var/run/cdi/nvidia.yaml
+	sudo NVIDIA_CTK_CONFIG_FILE_PATH=/usr/local/nvidia/toolkit/.config/nvidia-container-runtime/config.toml nvidia-ctk config --set nvidia-container-runtime.mode=cdi --set nvidia-container-runtime.modes.cdi.default-kind=nvidia.com/gpu --in-place
+	sudo systemctl restart k3s
+	kubectl rollout restart daemonset/nvidia-device-plugin-daemonset -n kube-system
 	kubectl rollout status daemonset/nvidia-device-plugin-daemonset -n kube-system --timeout=180s
 
 validate-gpu: ## Check whether the cluster advertises NVIDIA GPU resources

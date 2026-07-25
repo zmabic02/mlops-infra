@@ -26,6 +26,17 @@ if [[ "${ENABLE_GPU:-false}" == "true" ]]; then
   # Strip that check so the wrappers always invoke the real CDI-aware binary.
   if grep -qi microsoft /proc/version 2>/dev/null; then
     echo "Detected WSL2 kernel; patching k3s-managed nvidia-container-runtime wrappers to skip the /proc/modules check."
+    # k3s gives its generated runtime wrapper a separate configuration file.
+    # Its default CDI kind is management.nvidia.com/gpu, whereas the CDI spec
+    # created by nvidia-ctk uses nvidia.com/gpu. Keep them aligned: otherwise
+    # pods run with RuntimeClass nvidia fail before starting with an
+    # "unresolvable CDI devices management.nvidia.com/gpu=all" error.
+    sudo NVIDIA_CTK_CONFIG_FILE_PATH=/usr/local/nvidia/toolkit/.config/nvidia-container-runtime/config.toml \
+      nvidia-ctk config \
+        --set nvidia-container-runtime.mode=cdi \
+        --set nvidia-container-runtime.modes.cdi.default-kind=nvidia.com/gpu \
+        --in-place
+
     for f in /usr/local/nvidia/toolkit/nvidia-container-runtime /usr/local/nvidia/toolkit/nvidia-container-runtime.cdi; do
       if [[ -f "$f" ]] && grep -q '/proc/modules' "$f"; then
         sudo tee "$f" >/dev/null <<EOF
