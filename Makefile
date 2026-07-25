@@ -79,7 +79,10 @@ bootstrap: install-argocd-cli ## Initial installation (k3s + ArgoCD)
 install-gpu-plugin: ## Install the NVIDIA device plugin on the current cluster
 	kubectl get runtimeclass nvidia >/dev/null
 	kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/$(NVIDIA_DEVICE_PLUGIN_VERSION)/deployments/static/nvidia-device-plugin.yml
-	kubectl patch daemonset nvidia-device-plugin-daemonset -n kube-system --type='merge' -p '{"spec":{"template":{"spec":{"runtimeClassName":"nvidia"}}}}'
+	kubectl -n kube-system create configmap nvidia-device-plugin-config \
+		--from-file=config=bootstrap/nvidia-device-plugin/time-slicing-config.yaml \
+		--dry-run=client -o yaml | kubectl apply -f -
+	kubectl patch daemonset nvidia-device-plugin-daemonset -n kube-system --type='strategic' --patch-file bootstrap/nvidia-device-plugin/daemonset-patch.yaml
 	kubectl rollout status daemonset/nvidia-device-plugin-daemonset -n kube-system --timeout=180s
 
 validate-gpu: ## Check whether the cluster advertises NVIDIA GPU resources

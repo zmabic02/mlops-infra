@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvidia-device-plugin-daemonset
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      runtimeClassName: nvidia
+      containers:
+        - name: nvidia-device-plugin-ctr
+          args:
+            - --config-file=/config/config
+          volumeMounts:
+            - name: nvidia-device-plugin-config
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: nvidia-device-plugin-config
+          configMap:
+            name: nvidia-device-plugin-config
