@@ -13,7 +13,7 @@ KSOPS_INSTALL_DIR ?= $(HOME)/.local/bin
 SOPS_AGE_KEY_FILE ?= $(HOME)/.config/sops/age/keys.txt
 KUBEFLOW_KUSTOMIZE_BIN ?= $(HOME)/.local/bin/kustomize_5_2_1
 ENABLE_GPU ?= true
-NVIDIA_DEVICE_PLUGIN_VERSION ?= v0.17.1
+NVIDIA_DEVICE_PLUGIN_VERSION ?= v0.19.3
 
 help: ## Show available commands
 	@awk 'BEGIN {FS = ":.*##"; printf "\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  %-25s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
