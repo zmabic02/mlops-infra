@@ -17,6 +17,27 @@ curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="$install_k3s_exec" sh -s - \
 
 if [[ "${ENABLE_GPU:-false}" == "true" ]]; then
   sudo grep -q nvidia /var/lib/rancher/k3s/agent/etc/containerd/config.toml
+
+  # On WSL2 there are no real "nvidia" kernel modules (the driver is a stub
+  # exposed by the Windows host via /dev/dxg), so the wrapper scripts that
+  # k3s generates under /usr/local/nvidia/toolkit unconditionally fall back
+  # to plain runc after checking `grep '^nvidia ' /proc/modules`, silently
+  # skipping GPU/CDI injection regardless of nvidia-container-runtime.mode.
+  # Strip that check so the wrappers always invoke the real CDI-aware binary.
+  if grep -qi microsoft /proc/version 2>/dev/null; then
+    echo "Detected WSL2 kernel; patching k3s-managed nvidia-container-runtime wrappers to skip the /proc/modules check."
+    for f in /usr/local/nvidia/toolkit/nvidia-container-runtime /usr/local/nvidia/toolkit/nvidia-container-runtime.cdi; do
+      if [[ -f "$f" ]] && grep -q '/proc/modules' "$f"; then
+        sudo tee "$f" >/dev/null <<EOF
+#! /bin/sh
+NVIDIA_CTK_CONFIG_FILE_PATH=/usr/local/nvidia/toolkit/.config/nvidia-container-runtime/config.toml \\
+PATH=/usr/local/nvidia/toolkit:\$PATH \\
+	exec "\$0.real" "\$@"
+EOF
+        sudo chmod +x "$f"
+      fi
+    done
+  fi
 fi
 
 mkdir -p ~/.kube

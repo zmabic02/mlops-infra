@@ -11,6 +11,9 @@ spec:
         - name: nvidia-device-plugin-ctr
           args:
             - --config-file=/config/config
+          env:
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "nvidia.com/gpu=all"
           volumeMounts:
             - name: nvidia-device-plugin-config
               mountPath: /config
