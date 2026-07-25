@@ -28,3 +28,14 @@ if ! command -v nvidia-ctk >/dev/null 2>&1; then
   echo "nvidia-ctk was not installed successfully." >&2
   exit 1
 fi
+
+# On WSL2 there are no traditional "nvidia" kernel modules to detect (the GPU
+# driver lives on the Windows host), so nvidia-container-runtime's default
+# "auto" mode falls back to plain runc and silently skips GPU injection. WSL2
+# requires the "csv" runtime mode (driven by host-files-for-container.d/*.csv)
+# plus no-cgroups, since WSL2 doesn't expose real device cgroups either.
+if grep -qi microsoft /proc/version 2>/dev/null; then
+  echo "Detected WSL2 kernel; configuring nvidia-container-runtime for WSL (csv mode, no-cgroups)."
+  sudo nvidia-ctk config --set nvidia-container-runtime.mode=csv --in-place
+  sudo nvidia-ctk config --set nvidia-container-cli.no-cgroups --in-place
+fi

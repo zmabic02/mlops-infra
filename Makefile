@@ -12,7 +12,7 @@ ARGOCD_REPO_SECRET_NAME ?= repo-mlops-infra
 KSOPS_INSTALL_DIR ?= $(HOME)/.local/bin
 SOPS_AGE_KEY_FILE ?= $(HOME)/.config/sops/age/keys.txt
 KUBEFLOW_KUSTOMIZE_BIN ?= $(HOME)/.local/bin/kustomize_5_2_1
-ENABLE_GPU ?= false
+ENABLE_GPU ?= true
 NVIDIA_DEVICE_PLUGIN_VERSION ?= v0.17.1
 
 help: ## Show available commands
