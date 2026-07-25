@@ -77,7 +77,7 @@ bootstrap: install-argocd-cli ## Initial installation (k3s + ArgoCD)
 		-f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 install-gpu-plugin: ## Install the NVIDIA device plugin on the current cluster
-	kubectl get runtimeclass nvidia >/dev/null
+	kubectl apply -f bootstrap/nvidia-device-plugin/runtimeclass-nvidia.yaml
 	kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/$(NVIDIA_DEVICE_PLUGIN_VERSION)/deployments/static/nvidia-device-plugin.yml
 	kubectl -n kube-system create configmap nvidia-device-plugin-config \
 		--from-file=config=bootstrap/nvidia-device-plugin/time-slicing-config.yaml \
