@@ -27,13 +27,11 @@ describe_failed_deployment() {
   local service_account
   local replicaset
 
-  echo >&2
   echo "Deployment rollout failed for ${namespace}/${name}. Collecting diagnostics..." >&2
   "$KUBECTL_BIN" -n "$namespace" describe deployment "$name" >&2 || true
 
   service_account=$("$KUBECTL_BIN" -n "$namespace" get deployment "$name" -o jsonpath='{.spec.template.spec.serviceAccountName}' 2>/dev/null || true)
   if [[ -n "$service_account" ]]; then
-    echo >&2
     echo "ServiceAccount ${namespace}/${service_account}:" >&2
     "$KUBECTL_BIN" -n "$namespace" get serviceaccount "$service_account" >&2 || true
   fi
@@ -45,12 +43,10 @@ describe_failed_deployment() {
   )
 
   if [[ -n "$replicaset" ]]; then
-    echo >&2
     echo "ReplicaSet ${namespace}/${replicaset}:" >&2
     "$KUBECTL_BIN" -n "$namespace" describe rs "$replicaset" >&2 || true
   fi
 
-  echo >&2
   echo "Recent events in namespace ${namespace}:" >&2
   "$KUBECTL_BIN" -n "$namespace" get events --sort-by=.metadata.creationTimestamp | tail -n 30 >&2 || true
 }
@@ -60,7 +56,6 @@ wait_for_deployment() {
   local name=$2
   local timeout=${3:-600s}
 
-  echo "Waiting for deployment/${name} in namespace ${namespace}..."
   if ! "$KUBECTL_BIN" -n "$namespace" rollout status deployment/"$name" --timeout="$timeout"; then
     describe_failed_deployment "$namespace" "$name"
     return 1
@@ -72,7 +67,6 @@ wait_for_namespace() {
   local attempts=${2:-60}
   local sleep_seconds=${3:-5}
 
-  echo "Waiting for namespace/${namespace}..."
   for ((attempt = 1; attempt <= attempts; attempt++)); do
     if "$KUBECTL_BIN" get namespace "$namespace" >/dev/null 2>&1; then
       return 0
@@ -86,14 +80,12 @@ wait_for_namespace() {
 }
 
 apply_default_user_rbac() {
-  echo "Applying fallback RBAC for the default Kubeflow profile..."
   "$KUBECTL_BIN" apply --server-side --force-conflicts -f "$DEFAULT_USER_RBAC_FILE"
 }
 
 label_namespace_privileged() {
   local namespace=$1
 
-  echo "Setting Pod Security labels on namespace/${namespace}..."
   "$KUBECTL_BIN" label namespace "$namespace" \
     pod-security.kubernetes.io/enforce=privileged \
     pod-security.kubernetes.io/audit=privileged \
@@ -116,7 +108,6 @@ until "$KUBECTL_BIN" apply --server-side --force-conflicts -f "$manifest_file"; 
     exit 1
   fi
 
-  echo "Kubeflow apply failed, retrying in ${RETRY_SLEEP_SECONDS}s (${attempt}/${RETRY_COUNT})..." >&2
   attempt=$((attempt + 1))
   sleep "$RETRY_SLEEP_SECONDS"
 done
@@ -153,6 +144,3 @@ wait_for_deployment kubeflow ml-pipeline-ui 900s
 wait_for_deployment kubeflow ml-pipeline-persistenceagent 900s
 wait_for_deployment kubeflow ml-pipeline-scheduledworkflow 900s
 wait_for_deployment kubeflow ml-pipeline-viewer-crd 900s
-
-echo
-echo "Kubeflow install finished."

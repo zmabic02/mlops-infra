@@ -18,19 +18,7 @@ curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="$install_k3s_exec" sh -s - \
 if [[ "${ENABLE_GPU:-false}" == "true" ]]; then
   sudo grep -q nvidia /var/lib/rancher/k3s/agent/etc/containerd/config.toml
 
-  # On WSL2 there are no real "nvidia" kernel modules (the driver is a stub
-  # exposed by the Windows host via /dev/dxg), so the wrapper scripts that
-  # k3s generates under /usr/local/nvidia/toolkit unconditionally fall back
-  # to plain runc after checking `grep '^nvidia ' /proc/modules`, silently
-  # skipping GPU/CDI injection regardless of nvidia-container-runtime.mode.
-  # Strip that check so the wrappers always invoke the real CDI-aware binary.
   if grep -qi microsoft /proc/version 2>/dev/null; then
-    echo "Detected WSL2 kernel; patching k3s-managed nvidia-container-runtime wrappers to skip the /proc/modules check."
-    # k3s gives its generated runtime wrapper a separate configuration file.
-    # Its default CDI kind is management.nvidia.com/gpu, whereas the CDI spec
-    # created by nvidia-ctk uses nvidia.com/gpu. Keep them aligned: otherwise
-    # pods run with RuntimeClass nvidia fail before starting with an
-    # "unresolvable CDI devices management.nvidia.com/gpu=all" error.
     sudo NVIDIA_CTK_CONFIG_FILE_PATH=/usr/local/nvidia/toolkit/.config/nvidia-container-runtime/config.toml \
       nvidia-ctk config \
         --set nvidia-container-runtime.mode=cdi \
